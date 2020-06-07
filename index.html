@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script>
+		var items = [];
+		var groups = [];
+
+		function render() {
+			var html = '';
+			for (var i = 0; i < items.length; i++) {
+				html += '<tr><td><button type="button" class="btnDeleteItem btn btn-danger">Delete</button></td><td>' + items[i] + '</td></tr>';
+			}
+
+			$("#items").html(html);
+
+			html = '';
+			for (var i = 0; i < groups.length; i++) {
+				html += '<tr><td><button type="button" class="btnDeleteGroup btn btn-danger">Delete</button></td><td>' + groups[i] + '</td></tr>';
+			}
+
+			$("#groups").html(html);
+		};
+
+		function shuffle(array) {
+			var currentIndex = array.length, temporaryValue, randomIndex;
+
+			// While there remain elements to shuffle...
+			while (0 !== currentIndex) {
+
+				// Pick a remaining element...
+				randomIndex = Math.floor(Math.random() * currentIndex);
+				currentIndex -= 1;
+
+				// And swap it with the current element.
+				temporaryValue = array[currentIndex];
+				array[currentIndex] = array[randomIndex];
+				array[randomIndex] = temporaryValue;
+			}
+
+			return array;
+		}
+
+		$(function () {
+			$("#btnAddItem").click(function () {
+				var item = $("#item").val().trim();
+				if (item && item != '') {
+					if (items.indexOf(item) < 0) {
+						items.push(item);
+					}
+					else {
+						alert('Item exists');
+					}
+				}
+
+				$("#item").val('');
+
+				render();
+			});
+
+			$(document).on('click', '.btnDeleteItem', function (e) {
+				var item = $($(e.target).closest('tr').find('td')[1]).html().trim();
+
+				if (items.indexOf(item) >= 0) {
+					items.splice(items.indexOf(item), 1);
+				}
+				else {
+					alert('Item not found');
+				}
+
+				render();
+			});
+
+			$(document).on('click', '.btnDeleteGroup', function (e) {
+				var group = $($(e.target).closest('tr').find('td')[1]).html().trim();
+
+				if (groups.indexOf(group) >= 0) {
+					groups.splice(groups.indexOf(group), 1);
+				}
+				else {
+					alert('Group not found');
+				}
+
+				render();
+			});
+
+
+			$("#btnAddGroup").click(function () {
+				var group = $("#group").val().trim();
+				if (group && group != '') {
+					if (groups.indexOf(group) < 0) {
+						groups.push(group);
+					}
+					else {
+						alert('Group exists');
+					}
+				}
+
+				$("#group").val('');
+
+				render();
+			});
+
+			$("#btnRandomize").click(function () {
+				if (groups.length == 0) {
+					alert('No groups');
+					return;
+				}
+				if (items.length < groups.length) {
+					alert('Items count lower than groups count');
+					return;
+				}
+
+				var chunks = {};
+				shuffle(items);
+
+				for (var i = 0; i < groups.length; i++) {
+					chunks[groups[i]] = [];
+				}
+
+
+				var groupIndex = 0;
+				for (var i = 0; i < items.length; i++) {
+					chunks[groups[groupIndex]].push(items[i]);
+
+					if (groupIndex + 1 < groups.length) {
+						groupIndex++;
+					}
+					else {
+						groupIndex = 0;
+					}
+				}
+
+				renderResults(chunks);
+			});
+		});
+
+		function renderResults(chunks) {
+			var html = '';
+
+			for (var group in chunks) {
+				if (Object.prototype.hasOwnProperty.call(chunks, group)) {
+					html += '<table class="table"><thead><tr><th><b>' + group + '</b></th></tr></thead><tbody>';
+					for (var i = 0; i < chunks[group].length; i++) {
+						html += '<tr><td>' + chunks[group][i] + '</td></tr>';
+					}
+					html += '</tbody></table>';
+				}
+			}
+
+			$("#results").html(html);
+			$("html, body").animate({ scrollTop: $(document).height() }, 1000);
+		}
+	</script>
+</head>
+
+<body>
+	<div class="container" style="padding-bottom: 10px;">
+		<h1>Group Randomizer</h1>
+		<div class="row">
+			<div class="col-12">
+				<label for="item">Item</label>
+				<div class="input-group">
+					<input type="text" class="form-control" id="item">
+
+					<div class="input-group-append">
+						<button id="btnAddItem" class="btn btn-primary" type="button">Add</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<table class="table">
+					<thead>
+						<tr>
+							<th style="width:20%;"></th>
+							<th>Item</th>
+						</tr>
+					</thead>
+					<tbody id="items">
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+				<label for="group">Group</label>
+				<div class="input-group">
+					<input type="text" class="form-control" id="group">
+
+					<div class="input-group-append">
+						<button id="btnAddGroup" class="btn btn-primary" type="button">Add</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<table class="table">
+					<thead>
+						<tr>
+							<th style="width:20%;"></th>
+							<th>Group</th>
+						</tr>
+					</thead>
+					<tbody id="groups">
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<button class="btn btn-primary" type="button" id="btnRandomize">Randomize</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<div id="results"></div>
+			</div>
+		</div>
+
+	</div>
+</body>
+
+</html>
